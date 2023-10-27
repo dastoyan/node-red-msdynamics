@@ -1,0 +1,17 @@
+{
+  "name": "node-red-contrib-msdynamics",
+  "version": "0.0.1",
+  "description": "Node-RED nodes for Microsoft Dynamics",
+  "main": "nodes/auth/msdynamics-auth.js",
+  "node-red": {
+    "nodes": {
+      "msdynamics-auth": "./nodes/auth/msdynamics-auth.js"
+    }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Your Name",
+  "license": "ISC",
+  "dependencies": {}
+}

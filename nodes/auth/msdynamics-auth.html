@@ -1,0 +1,52 @@
+<script type="text/javascript">
+    RED.nodes.registerType('msdynamics-auth',{
+        category: 'config',
+        defaults: {
+            name: {value: ""},
+            clientId: {value: "", required: true},
+            tenantId: {value: "", required: true},
+            instanceUrl: {value: "", required: true}
+        },
+        credentials: {
+            clientSecret: {type: "text", required: true}
+        },
+        label: function() {
+            return this.name || "MS Dynamics Auth";
+        },
+        oneditprepare: function() {
+            // Any preparation you'd like when the edit dialog is opened.
+        },
+        oneditsave: function() {
+            // Actions to be done when the edit dialog is saved.
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="msdynamics-auth">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-clientId"><i class="icon-user"></i> Client ID</label>
+        <input type="text" id="node-input-clientId" placeholder="Client ID">
+    </div>
+    <div class="form-row">
+        <label for="node-input-tenantId">Tenant ID</label>
+        <input type="text" id="node-input-tenantId" placeholder="Tenant ID">
+    </div>
+    <div class="form-row">
+        <label for="node-input-instanceUrl">Instance URL</label>
+        <input type="text" id="node-input-instanceUrl" placeholder="https://yourinstance.crm4.dynamics.com/">
+    </div>
+    <div class="form-row">
+        <label for="node-input-clientSecret">Client Secret</label>
+        <input type="password" id="node-input-clientSecret">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="msdynamics-auth">
+    <p>Node for managing Microsoft Dynamics authentication.</p>
+    <p>Once configured, this node will manage the access token and refresh it as required.</p>
+    <p>You must provide your Client ID, Client Secret, Tenant ID, and Dynamics instance URL.</p>
+</script>
