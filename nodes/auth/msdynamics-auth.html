@@ -1,25 +1,66 @@
 <script type="text/javascript">
-    RED.nodes.registerType('msdynamics-auth',{
-        category: 'config',
-        defaults: {
-            name: {value: ""},
-            clientId: {value: "", required: true},
-            tenantId: {value: "", required: true},
-            instanceUrl: {value: "", required: true}
-        },
-        credentials: {
-            clientSecret: {type: "text", required: true}
-        },
-        label: function() {
-            return this.name || "MS Dynamics Auth";
-        },
-        oneditprepare: function() {
-            // Any preparation you'd like when the edit dialog is opened.
-        },
-        oneditsave: function() {
-            // Actions to be done when the edit dialog is saved.
-        }
-    });
+  RED.nodes.registerType("msdynamics-auth", {
+    category: "MSDynamics",
+    defaults: {
+      name: { value: "" },
+      clientId: { value: "", required: true },
+      tenantId: { value: "", required: true },
+      instanceUrl: { value: "", required: true },
+      autoRefresh: { value: true, required: true }, // Enable auto-refresh by default
+      refreshInterval: { value: 30, required: true }, // Default refresh interval in minutes
+      retryInterval: { value: 15, required: true }, // Default retry interval in minutes
+    },
+    credentials: {
+      clientSecret: { type: "text", required: true },
+    },
+    label: () => this.name || "MS Dynamics Auth",
+    color: "#A6E1FA",
+    icon: "font-awesome/fa-key",
+    inputs: 1, // Define one input
+    outputs: 2, // Define two outputs
+    outputLabels: ["Success", "Failure"],
+    oneditprepare: () => {
+      const updateFieldsState = () => {
+        const isAutoRefreshChecked = $("#node-input-autoRefresh").is(
+          ":checked"
+        );
+        $("#node-input-refreshInterval").prop(
+          "disabled",
+          !isAutoRefreshChecked
+        );
+        $("#node-input-retryInterval").prop("disabled", !isAutoRefreshChecked);
+      };
+
+      updateFieldsState();
+      $("#node-input-autoRefresh").on("change", updateFieldsState);
+    },
+    oneditsave: () => {
+      const autoRefresh = $("#node-input-autoRefresh").is(":checked");
+      let refreshInterval = $("#node-input-refreshInterval").val().trim();
+      let retryInterval = $("#node-input-retryInterval").val().trim();
+
+      if (autoRefresh && (refreshInterval === "" || retryInterval === "")) {
+        RED.notify(
+          "Refresh Interval and Retry Interval cannot be empty when Auto Refresh is enabled",
+          "error"
+        );
+        return false;
+      }
+
+      $("#node-input-refreshInterval").val(refreshInterval);
+      $("#node-input-retryInterval").val(retryInterval);
+    },
+  });
+</script>
+
+<script type="text/x-red" data-help-name="msdynamics-auth">
+  <p>This node manages Microsoft Dynamics authentication by handling access token generation and refresh.</p>
+  <p>Configuration fields include <i>Client ID</i>, <i>Client Secret</i>, <i>Tenant ID</i>, <i>Instance URL</i>, and the refresh-related settings.</p>
+  <p>The refreshed access token is stored in the Node-RED global context under the key <code>msDynamicsToken</code>. This allows other nodes in your flow to access and use the token. Be aware that storing sensitive information in the global context can be accessed by any node in the flow, so ensure this aligns with your security practices.</p>
+  <p>The node provides two outputs - the first output is used to send success messages with the refreshed token details, and the second output sends error messages in case of a refresh failure. Depending on the AutoRefresh mode, you may have to use them.</p>
+  <p><strong>AutoRefresh Enabled:</strong> The node automatically refreshes the token at intervals set by 'Refresh Interval' and every time the flow is deployed or restarted. If a refresh fails, it retries after the 'Retry Interval'. Success and error messages are output respectively. In this mode you do not have to use the outputs.</p>
+  <p><strong>AutoRefresh Disabled:</strong> The node requires manual triggering for token refresh via its input except when the flow is deployed or restarted. To do so, send a message to this node's input using an Inject node or any other node capable of sending messages. Users must monitor token expiry and trigger refreshes as necessary. You can use the node outputs to create your own logic to handle success and failure results.</p>
+  <p>Regardless of the AutoRefresh setting, you can use the outputs to manage flow control.</p>
 </script>
 
 <script type="text/x-red" data-template-name="msdynamics-auth">
@@ -43,10 +84,16 @@
         <label for="node-input-clientSecret">Client Secret</label>
         <input type="password" id="node-input-clientSecret">
     </div>
-</script>
-
-<script type="text/x-red" data-help-name="msdynamics-auth">
-    <p>Node for managing Microsoft Dynamics authentication.</p>
-    <p>Once configured, this node will manage the access token and refresh it as required.</p>
-    <p>You must provide your Client ID, Client Secret, Tenant ID, and Dynamics instance URL.</p>
+    <div class="form-row">
+      <label for="node-input-autoRefresh"><i class="fa fa-refresh"></i> Enable Auto Refresh</label>
+      <input type="checkbox" id="node-input-autoRefresh" style="display: inline-block; width: auto; vertical-align: top;">
+  </div>
+  <div class="form-row">
+      <label for="node-input-refreshInterval">Refresh Interval (minutes)</label>
+      <input type="number" id="node-input-refreshInterval" placeholder="30">
+  </div>
+  <div class="form-row">
+      <label for="node-input-retryInterval">Retry Interval (minutes)</label>
+      <input type="number" id="node-input-retryInterval" placeholder="15">
+  </div>
 </script>

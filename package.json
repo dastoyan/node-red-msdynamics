@@ -13,5 +13,7 @@
   },
   "author": "Your Name",
   "license": "ISC",
-  "dependencies": {}
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  }
 }
