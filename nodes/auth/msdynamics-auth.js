@@ -69,7 +69,8 @@ module.exports = function (RED) {
             {
               payload: {
                 response: data,
-                headers: response.headers,
+                headers: response.headers.raw(),
+                statusText: response.statusText,
                 status: response.status,
               },
             },
@@ -84,12 +85,22 @@ module.exports = function (RED) {
           // Handle non-ok responses. Log the status to the dubug console.
           node.error("HTTP error from MS Dynamics: " + response.statusText);
           node.status({ fill: "red", shape: "ring", text: "HTTP error" });
-          node.send([null, { payload: data, completeResponse: response }]);
+          node.send([
+            null,
+            {
+              payload: {
+                response: data,
+                headers: response.headers.raw(),
+                statusText: response.statusText,
+                status: response.status,
+              },
+            },
+          ]);
         }
       } catch (error) {
         // Handle exceptions. Log the status to the dubug console.
-        node.error("Failed to refresh MS Dynamics token: " + error.message);
-        node.status({ fill: "red", shape: "ring", text: "refresh failed" });
+        node.error("Exception while fetching token: " + error.message);
+        node.status({ fill: "red", shape: "ring", text: "Exception" });
         node.send([null, { payload: error.message }]);
         if (autoRefresh) {
           clearTimeout(refreshTimeout);

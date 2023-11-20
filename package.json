@@ -1,5 +1,5 @@
 {
-  "name": "node-red-msdynamics",
+  "name": "@dastoyan/node-red-msdynamics",
   "version": "0.0.1",
   "description": "Node-RED node for Microsoft Dynamics authentication.",
   "keywords": [
@@ -22,6 +22,9 @@
   "license": "MIT",
   "dependencies": {
     "node-fetch": "^2.7.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   },
   "repository": {
     "type": "git",
