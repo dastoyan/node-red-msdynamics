@@ -1,5 +1,5 @@
 const querystring = require("querystring");
-let fetch;
+const fetch = require("node-fetch");
 
 module.exports = function (RED) {
   if (!fetch) {
@@ -17,7 +17,7 @@ module.exports = function (RED) {
     const clientId = config.clientId;
     const clientSecret = this.credentials.clientSecret;
     const tenantId = config.tenantId;
-    const instanceUrl = config.instanceUrl;
+    const currentInstanceUrl = config.instanceUrl;
     const autoRefresh = config.autoRefresh;
 
     // Use user-provided values if available, otherwise use hardcoded defaults
@@ -32,66 +32,73 @@ module.exports = function (RED) {
     const storageKey = config.storageKey || "msDynamicsToken";
     let storedData = node.context().global.get(storageKey) || {};
     // Update instanceUrl in the storage object
-    storedData.instanceUrl = config.instanceUrl;
+    storedData.instanceUrl = currentInstanceUrl;
     // Save the updated object back to the global context
     node.context().global.set(storageKey, storedData);
 
     async function refreshToken() {
-      const fetchModule = await fetch;
-      const scope = `${config.instanceUrl}${scopeSuffix}`;
-      const payload = {
-        grant_type: grantType,
-        client_id: clientId,
-        client_secret: clientSecret,
-        scope: scope,
-      };
+      try {
+        const scope = `${currentInstanceUrl}${scopeSuffix}`;
+        const payload = querystring.stringify({
+          grant_type: grantType,
+          client_id: clientId,
+          client_secret: clientSecret,
+          scope: scope,
+        });
 
-      fetchModule(tokenEndpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          Host: host,
-        },
-        body: querystring.stringify(payload),
-      })
-        .then((response) =>
-          response.ok
-            ? response.json()
-            : Promise.reject(
-                new Error(`HTTP error! status: ${response.status}`)
-              )
-        )
-        .then((data) => {
-          const expiresInMilliseconds = data.expires_in * 1000;
-          const expiresAt = Date.now() + expiresInMilliseconds;
+        const response = await fetch(tokenEndpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Host: host,
+          },
+          body: payload,
+        });
 
-          // Retrieve the entire storage object and preserve any additional attributes that might be there. This allows future expansion but also the user to add attributes.
+        const data = await response.json();
+
+        if (response.ok) {
+          //Get the global context var before writing to it in order to ensure that values not managed by this node do not get overwritten. Allows the user to extned the object with their own additional values.
           let storedData = node.context().global.get(storageKey) || {};
           storedData.accessToken = data.access_token;
-          storedData.expiresAt = expiresAt;
+          //Help the user with a precalulated expiresAt field in case they want to implement their own refresh logic.
+          storedData.expiresAt = Date.now() + data.expires_in * 1000;
+          node.context().global.set(storageKey, storedData);
 
-          node.context().global.set(storageKey, storedData); // Save the updated object
-
-          node.send([{ payload: data }, null]);
-
+          node.send([
+            {
+              payload: {
+                response: data,
+                headers: response.headers,
+                status: response.status,
+              },
+            },
+            null,
+          ]);
           if (autoRefresh) {
+            //Avoid memory leaks from multiple running timers.
             clearTimeout(refreshTimeout);
             refreshTimeout = setTimeout(refreshToken, refreshInterval);
           }
-        })
-        .catch((error) => {
-          node.error("Failed to refresh MS Dynamics token: " + error.message);
-          node.status({ fill: "red", shape: "ring", text: "refresh failed" });
-          node.send([null, { payload: error.message }]);
-
-          if (autoRefresh) {
-            clearTimeout(refreshTimeout);
-            refreshTimeout = setTimeout(refreshToken, retryInterval);
-          }
-        });
+        } else {
+          // Handle non-ok responses. Log the status to the dubug console.
+          node.error("HTTP error from MS Dynamics: " + response.statusText);
+          node.status({ fill: "red", shape: "ring", text: "HTTP error" });
+          node.send([null, { payload: data, completeResponse: response }]);
+        }
+      } catch (error) {
+        // Handle exceptions. Log the status to the dubug console.
+        node.error("Failed to refresh MS Dynamics token: " + error.message);
+        node.status({ fill: "red", shape: "ring", text: "refresh failed" });
+        node.send([null, { payload: error.message }]);
+        if (autoRefresh) {
+          clearTimeout(refreshTimeout);
+          refreshTimeout = setTimeout(refreshToken, retryInterval);
+        }
+      }
     }
     // Validate configuration
-    if (!clientId || !clientSecret || !tenantId || !instanceUrl) {
+    if (!clientId || !clientSecret || !tenantId || !currentInstanceUrl) {
       node.error("Missing configuration data");
       node.status({ fill: "red", shape: "ring", text: "not configured" });
       return;
