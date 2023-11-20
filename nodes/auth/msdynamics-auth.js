@@ -19,26 +19,38 @@ module.exports = function (RED) {
     const tenantId = config.tenantId;
     const instanceUrl = config.instanceUrl;
     const autoRefresh = config.autoRefresh;
+
+    // Use user-provided values if available, otherwise use hardcoded defaults
     const refreshInterval = (config.refreshInterval || 30) * 60 * 1000;
     const retryInterval = (config.retryInterval || 15) * 60 * 1000;
+    const tokenEndpoint = config.tokenEndpoint;
+    const grantType = config.grantType || "client_credentials";
+    const scopeSuffix = config.scopeSuffix || ".default";
+    const host = config.host || "login.microsoftonline.com";
+
+    // Configuration option for storage object key
+    const storageKey = config.storageKey || "msDynamicsToken";
+    let storedData = node.context().global.get(storageKey) || {};
+    // Update instanceUrl in the storage object
+    storedData.instanceUrl = config.instanceUrl;
+    // Save the updated object back to the global context
+    node.context().global.set(storageKey, storedData);
 
     async function refreshToken() {
       const fetchModule = await fetch;
-      node.warn("Starting refreshToken function");
-
-      const tokenEndpoint = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
+      const scope = `${config.instanceUrl}${scopeSuffix}`;
       const payload = {
-        grant_type: "client_credentials",
+        grant_type: grantType,
         client_id: clientId,
         client_secret: clientSecret,
-        scope: `${instanceUrl}.default`,
+        scope: scope,
       };
 
       fetchModule(tokenEndpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
-          Host: "login.microsoftonline.com",
+          Host: host,
         },
         body: querystring.stringify(payload),
       })
@@ -53,12 +65,13 @@ module.exports = function (RED) {
           const expiresInMilliseconds = data.expires_in * 1000;
           const expiresAt = Date.now() + expiresInMilliseconds;
 
-          const tokenData = {
-            accessToken: data.access_token,
-            expiresAt: expiresAt,
-          };
+          // Retrieve the entire storage object and preserve any additional attributes that might be there. This allows future expansion but also the user to add attributes.
+          let storedData = node.context().global.get(storageKey) || {};
+          storedData.accessToken = data.access_token;
+          storedData.expiresAt = expiresAt;
 
-          node.context().global.set("msDynamicsToken", tokenData);
+          node.context().global.set(storageKey, storedData); // Save the updated object
+
           node.send([{ payload: data }, null]);
 
           if (autoRefresh) {

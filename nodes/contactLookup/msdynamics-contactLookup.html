@@ -1,0 +1,29 @@
+<script type="text/x-red" data-template-name="msdynamics-contactlookup">
+  <div class="form-row">
+      <label for="node-input-phoneField">Phone Field</label>
+      <input type="text" id="node-input-phoneField" placeholder="Field to search (e.g., mobile)">
+  </div>
+  <!-- Add other configuration fields here if needed -->
+</script>
+
+<script type="text/javascript">
+  RED.nodes.registerType("msdynamics-contactlookup", {
+    category: "MSDynamics",
+    color: "#A6E1FA",
+    defaults: {
+      name: { value: "" },
+      phoneField: { value: "", required: true },
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: "font-awesome/fa-phone",
+    label: function () {
+      return this.name || "MS Dynamics Contact Lookup";
+    },
+  });
+</script>
+
+<script type="text/x-red" data-help-name="msdynamics-contactlookup">
+  <p>This node looks up a contact in Microsoft Dynamics based on a phone number.</p>
+  <p>Configure the phone field to specify which Dynamics field (e.g., mobile) should be searched.</p>
+</script>

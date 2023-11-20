@@ -9,17 +9,36 @@
       autoRefresh: { value: true, required: true }, // Enable auto-refresh by default
       refreshInterval: { value: 30, required: true }, // Default refresh interval in minutes
       retryInterval: { value: 15, required: true }, // Default retry interval in minutes
+      tokenEndpoint: { value: "", required: false },
+      grantType: { value: "", required: false },
+      scopeSuffix: { value: "", required: false },
+      host: { value: "", required: false },
+      storageKey: { value: "msDynamicsToken", required: false },
     },
     credentials: {
       clientSecret: { type: "text", required: true },
     },
     label: () => this.name || "MS Dynamics Auth",
+    description: "Node for managing Microsoft Dynamics authentication",
     color: "#A6E1FA",
     icon: "font-awesome/fa-key",
     inputs: 1, // Define one input
     outputs: 2, // Define two outputs
     outputLabels: ["Success", "Failure"],
     oneditprepare: () => {
+      const updateTokenEndpoint = () => {
+        const tenantId = $("#node-input-tenantId").val();
+        const host = $("#node-input-host").val() || "login.microsoftonline.com";
+        const tokenEndpoint = `https://${host}/${tenantId}/oauth2/v2.0/token`;
+        $("#node-input-tokenEndpoint").val(tokenEndpoint);
+      };
+
+      $("#node-input-tenantId, #node-input-host").on(
+        "change",
+        updateTokenEndpoint
+      );
+      updateTokenEndpoint(); // Call on edit prepare to initialize value
+
       const updateFieldsState = () => {
         const isAutoRefreshChecked = $("#node-input-autoRefresh").is(
           ":checked"
@@ -54,46 +73,88 @@
 </script>
 
 <script type="text/x-red" data-help-name="msdynamics-auth">
-  <p>This node manages Microsoft Dynamics authentication by handling access token generation and refresh.</p>
-  <p>Configuration fields include <i>Client ID</i>, <i>Client Secret</i>, <i>Tenant ID</i>, <i>Instance URL</i>, and the refresh-related settings.</p>
-  <p>The refreshed access token is stored in the Node-RED global context under the key <code>msDynamicsToken</code>. This allows other nodes in your flow to access and use the token. Be aware that storing sensitive information in the global context can be accessed by any node in the flow, so ensure this aligns with your security practices.</p>
-  <p>The node provides two outputs - the first output is used to send success messages with the refreshed token details, and the second output sends error messages in case of a refresh failure. Depending on the AutoRefresh mode, you may have to use them.</p>
-  <p><strong>AutoRefresh Enabled:</strong> The node automatically refreshes the token at intervals set by 'Refresh Interval' and every time the flow is deployed or restarted. If a refresh fails, it retries after the 'Retry Interval'. Success and error messages are output respectively. In this mode you do not have to use the outputs.</p>
-  <p><strong>AutoRefresh Disabled:</strong> The node requires manual triggering for token refresh via its input except when the flow is deployed or restarted. To do so, send a message to this node's input using an Inject node or any other node capable of sending messages. Users must monitor token expiry and trigger refreshes as necessary. You can use the node outputs to create your own logic to handle success and failure results.</p>
-  <p>Regardless of the AutoRefresh setting, you can use the outputs to manage flow control.</p>
+  <p>This node manages authentication with Microsoft Dynamics by handling access token generation and refresh. It stores the refreshed access token in the Node-RED global context under the key <code>msDynamicsToken</code>, which includes the <code>accessToken</code> string and the <code>expiresAt</code> timestamp.</p>
+
+  <p>To directly access the <code>accessToken</code> in your flows, use:</p>
+  <pre><code>const accessToken = global.get("msDynamicsToken.accessToken");</code></pre>
+  <p>If <code>accessToken</code> is available, it can be used for authenticated API calls to Microsoft Dynamics.</p>
+
+  <p><strong>Inputs and Outputs:</strong></p>
+  <ul>
+      <li><strong>Input:</strong> The node has one input, used for manually triggering a token refresh. This is mainly for testing or building your own token refresh logic. The input does not process the incoming message content.</li>
+      <li><strong>Outputs:</strong> There are two outputs. The first sends success messages with token details upon refresh, and the second sends error messages if the refresh fails. These outputs are optional for debugging purposes, especially useful when not using AutoRefresh.</li>
+  </ul>
+
+  <p><strong>AutoRefresh Mode:</strong></p>
+  <ul>
+      <li><strong>Enabled:</strong> The node automatically refreshes the token at set intervals ('Refresh Interval' and 'Retry Interval'). In this mode, manual input and outputs are not necessary, just deploy and configure the node.</li>
+      <li><strong>Disabled:</strong> Manual triggering is required for token refresh. Send any message to the input as a trigger. Monitor outputs to manage refresh results.</li>
+  </ul>
+  <p>For both modes, the token is refreshed when the flow is deployed or Node-RED restarts.</p>
+  <p>Errors are always logged, but for detailed error messages, a debug node is recommended.</p>
+  <p><strong>Note:</strong> Storing sensitive information like access tokens in the global context allows any node in the flow to access it. Ensure to follow best security practices in handling such sensitive information.</p>
+  <p><strong>Note:</strong> The fields for Token Endpoint, Grant Type, Scope Suffix, and Host have default values that are suitable for most use cases. Only modify these if your specific Microsoft Dynamics setup requires different values.</p>
 </script>
 
 <script type="text/x-red" data-template-name="msdynamics-auth">
-    <div class="form-row">
-        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
+        <div class="form-row">
+            <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+            <input type="text" id="node-input-name" placeholder="Name">
+        </div>
+        <div class="form-row">
+            <label for="node-input-clientId"><i class="icon-user"></i> Client ID</label>
+            <input type="text" id="node-input-clientId" placeholder="Client ID">
+        </div>
+        <div class="form-row">
+            <label for="node-input-tenantId">Tenant ID</label>
+            <input type="text" id="node-input-tenantId" placeholder="Tenant ID">
+        </div>
+        <div class="form-row">
+            <label for="node-input-instanceUrl">Instance URL</label>
+            <input type="text" id="node-input-instanceUrl" placeholder="https://yourinstance.crm4.dynamics.com/">
+        </div>
+        <div class="form-row">
+            <label for="node-input-clientSecret">Client Secret</label>
+            <input type="password" id="node-input-clientSecret">
+        </div>
+        <div class="form-row">
+          <label for="node-input-autoRefresh"><i class="fa fa-refresh"></i> Enable Auto Refresh</label>
+          <input type="checkbox" id="node-input-autoRefresh" style="display: inline-block; width: auto; vertical-align: top;">
+      </div>
+      <div class="form-row">
+          <label for="node-input-refreshInterval">Refresh Interval (minutes)</label>
+          <input type="number" id="node-input-refreshInterval" placeholder="30">
+      </div>
+      <div class="form-row">
+          <label for="node-input-retryInterval">Retry Interval (minutes)</label>
+          <input type="number" id="node-input-retryInterval" placeholder="15">
+      </div>
+      <div class="form-row">
+        <p style="color: #555; margin-top: 4px; margin-bottom: 4px;">
+            <strong>Note:</strong> The following are advanced settings and should not be changed.
+        </p>
+        <p>
+          Leave them empty to use the defaults.
+      </p>
+    </div>
+      <div class="form-row">
+        <label for="node-input-tokenEndpoint">Token Endpoint</label>
+        <input type="text" id="node-input-tokenEndpoint" readonly>
     </div>
     <div class="form-row">
-        <label for="node-input-clientId"><i class="icon-user"></i> Client ID</label>
-        <input type="text" id="node-input-clientId" placeholder="Client ID">
+        <label for="node-input-grantType">Grant Type</label>
+        <input type="text" id="node-input-grantType" placeholder="client_credentials">
     </div>
     <div class="form-row">
-        <label for="node-input-tenantId">Tenant ID</label>
-        <input type="text" id="node-input-tenantId" placeholder="Tenant ID">
+        <label for="node-input-scopeSuffix">Scope Suffix</label>
+        <input type="text" id="node-input-scopeSuffix" placeholder=".default">
     </div>
     <div class="form-row">
-        <label for="node-input-instanceUrl">Instance URL</label>
-        <input type="text" id="node-input-instanceUrl" placeholder="https://yourinstance.crm4.dynamics.com/">
+        <label for="node-input-host">Host</label>
+        <input type="text" id="node-input-host" placeholder="login.microsoftonline.com">
     </div>
     <div class="form-row">
-        <label for="node-input-clientSecret">Client Secret</label>
-        <input type="password" id="node-input-clientSecret">
-    </div>
-    <div class="form-row">
-      <label for="node-input-autoRefresh"><i class="fa fa-refresh"></i> Enable Auto Refresh</label>
-      <input type="checkbox" id="node-input-autoRefresh" style="display: inline-block; width: auto; vertical-align: top;">
-  </div>
-  <div class="form-row">
-      <label for="node-input-refreshInterval">Refresh Interval (minutes)</label>
-      <input type="number" id="node-input-refreshInterval" placeholder="30">
-  </div>
-  <div class="form-row">
-      <label for="node-input-retryInterval">Retry Interval (minutes)</label>
-      <input type="number" id="node-input-retryInterval" placeholder="15">
+      <label for="node-input-storageKey">Storage Key</label>
+      <input type="text" id="node-input-storageKey" placeholder="msDynamicsToken">
   </div>
 </script>
