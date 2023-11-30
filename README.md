@@ -35,7 +35,8 @@ Token information is optionally stored in the Node-RED global context under the 
 - `accessToken`
 - `expiresAt`
 - `instanceUrl`
-  To directly access the `accessToken` in your flows, use the following code snippet:
+
+To directly access the `accessToken` in your flows, use the following code snippet:
 
 ```javascript
 const accessToken = global.get("msDynamicsToken.accessToken");
