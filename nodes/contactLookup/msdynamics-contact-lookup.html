@@ -66,7 +66,7 @@
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
     <div class="form-row">
-        <label for="node-input-configNodeId"><i class="icon-gears"></i> Config</label>
+        <label for="node-input-configNodeId"><i class="icon-gears"></i> Dynamics Connection</label>
         <select id="node-input-configNodeId" style="width:70%;"></select>
     </div>
     <div class="form-row">
@@ -114,23 +114,31 @@
 </script>
 
 <script type="text/x-red" data-help-name="msdynamics-contact-lookup">
-    <p><strong>Functionality:</strong> Searches for contacts in Microsoft Dynamics using a provided phone number. The node cleans up the phone number from the input message by removing domain suffixes, empty space and any non-numeric characters except for the leading plus sign.</p>
+    <p><strong>Functionality:</strong> Searches for contacts in Microsoft Dynamics using a provided phone number.</p>
     <h4>Input</h4>
-    <p>Expects a message with one of the selected paths containing the phone number to look up.</p>
+    <p>Expects a message with one of the selected paths containing the phone number to look up. The node cleans up the phone number from the input message by removing domain suffixes, empty space and any non-numeric characters except for the leading plus sign.</p>
     <h4>Configuration</h4>
+    <p><strong>Dynamics Connection</strong>: Select the Microsoft Dynamics configuration node.</p>
+    <p><strong>Lookup Timeout</strong>: Time in milliseconds before the lookup request is aborted (default 3000 ms).</p>
+    <p><strong>Attribute Lookup</strong>:</p>
     <ul>
-        <li><strong>Config Node</strong>: Select the Microsoft Dynamics configuration node.</li>
-        <li><strong>Lookup Telephone</strong>: Enables searching the <code>telephone1</code> field.</li>
-        <li><strong>Lookup Mobile</strong>: Enables searching the <code>mobilephone</code> field.</li>
-        <li><strong>Lookup Timeout</strong>: Time in milliseconds before the lookup request times out (default 3000 ms).</li>
+        <li><strong>Telephone</strong>: Enables searching the <code>telephone1</code> field.</li>
+        <li><strong>Mobile</strong>: Enables searching the <code>mobilephone</code> field.</li>
     </ul>
-    <p>Phone Number Source:</p>
+    <p><strong>Phone Number Source</strong>:</p>
     <ul>
-        <li><code>msg.session.sipUri</code>: Anywhere365 Dialogue Cloud V3.</li>
+        <li><code>msg.session.sipUri</code>: Anywhere365 Dialogue Cloud V3 (default).</li>
         <li><code>msg.dialogue.initiator.platformParticipantId</code>: Anywhere365 Dialogue Cloud Infinitiy.</li>
-        <li><code>msg.payload.q</code>: Anywhere365 WebAgent CRM Read integration.</li>
-        <li><code>Custom Attribute</code>: Any other custom path you might need to use.</li>
+        <li><code>msg.payload.q</code>: Anywhere365 V3 WebAgent CRM Read integration.</li>
+        <li>Custom Attribute: Any other custom path you might need to use.</li>
     </ul>
+    <p><strong>Custom Attribute Path</strong>: When <strong>Custom Attribute</strong> is selected this additional input field is presented. Enter the full path to where the phone number is stored. For example, <code>msg.myCustomAttribute</code></p>
+    <p><strong>Attributes to Return</strong>:</p>
+        <ul>
+            <li><strong>All Attributes</strong>: All attributes of the entity in Dynamics will be returned. Note that this might result in slow responses.</li>
+            <li><strong>Custom List</strong>: Speciffy which attributes to return.</li>
+        </ul>
+    <p><strong>Custom Return Attributes</strong>: When <strong>Custom List</strong> is selected this additional input field is presented. Enter a comma-separated list of attributes you want to be returned. For example, <code>firstname, lastname, emailaddress1</code></p>
     <h4>Outputs</h4>
     <ol>
         <li><strong>One Contact Found</strong>: Outputs the contact data if exactly one match is found.</li>
@@ -138,5 +146,5 @@
         <li><strong>Error/Timeout</strong>: Outputs if an error occurs or the request times out.</li>
     </ol>
     <h4>Usage Notes</h4>
-    <p>The node constructs a query based on the selected options (telephone/mobile) and performs a lookup. Ensure the MS Dynamics config node is properly set up with valid credentials. The node outputs detailed information including HTTP response headers and status codes for further processing.</p>
+    <p>The node constructs a query based on the selected options (telephone/mobile) and performs a lookup. Connect the input to an Incoming call node in Dialogue Studio. Ensure the MS Dynamics config node is properly set up with valid credentials. The node outputs detailed information including HTTP response headers and status codes for further processing.</p>
 </script>
