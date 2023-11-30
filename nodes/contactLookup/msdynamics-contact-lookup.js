@@ -6,20 +6,30 @@ module.exports = function (RED) {
 
     // Set default timeout to 3000 ms if not specified
     this.timeout = config.timeout || 3000;
-    this.lookupTelephone = config.lookupTelephone || true;
-    this.lookupMobile = config.lookupMobile || true;
+    this.lookupTelephone = config.lookupTelephone;
+    this.lookupMobile = config.lookupMobile;
 
-    function processPhoneNumber(msg) {
-      if (!configNode) {
-        node.error("MS Dynamics config node not found");
-        node.send([null, { error: "MS Dynamics config node not found" }]);
-        return;
+    this.selectedOption = config.selectedOption;
+    this.customAttribute = config.customAttribute;
+
+    function processPhoneNumber(phoneNumberPath) {
+      if (!phoneNumberPath) {
+        throw new Error("Phone number path is undefined or null");
       }
-      let phoneNumber = msg.session?.sipUri?.replace(/[^0-9+]/g, "");
+      // Remove domain part if present (e.g., 'tel:+123456@domain123.com' becomes 'tel:+123456')
+      let phoneNumber = phoneNumberPath.split("@")[0];
+      // Clean up the phone number to keep only digits and leading '+'
+      phoneNumber = phoneNumber.replace(/[^0-9+]/g, "");
       if (!phoneNumber) {
-        throw new Error("Phone number not found or invalid");
+        throw new Error(
+          "Configured phone number attribute does not exist in the incoming message"
+        );
       }
       return phoneNumber;
+    }
+
+    function getValueFromPath(msg, path) {
+      return path.split(".").reduce((obj, prop) => obj && obj[prop], msg);
     }
 
     async function handleFetchResponse(response) {
@@ -65,7 +75,6 @@ module.exports = function (RED) {
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), node.timeout);
-      console.log("url ", url);
 
       try {
         const response = await fetch(url, {
@@ -91,8 +100,35 @@ module.exports = function (RED) {
     }
 
     node.on("input", async function (msg) {
+      // Ensure at least one lookup attribute is checked
+      if (!config.lookupTelephone && !config.lookupMobile) {
+        node.error(
+          "At least one of 'Lookup Telephone' or 'Lookup Mobile' must be checked."
+        );
+        node.send([
+          null,
+          null,
+          {
+            error:
+              "At least one of 'Lookup Telephone' or 'Lookup Mobile' must be checked.",
+          },
+        ]);
+        return;
+      }
+
       try {
-        let phoneNumber = processPhoneNumber(msg);
+        let pathMap = {
+          sessionSipUri: "msg.session.sipUri",
+          initiatorId: "msg.dialogue.initiator.platformParticipantId",
+          payloadQ: "msg.payload.q",
+          custom: node.customAttribute,
+        };
+
+        let phoneNumberPath = pathMap[node.selectedOption];
+        //let phoneNumberValue = getValueFromPath(msg, phoneNumberPath);
+        let phoneNumberValue = eval(phoneNumberPath);
+        let phoneNumber = processPhoneNumber(phoneNumberValue);
+
         let httpResponse = await performLookup(phoneNumber);
 
         // Merge HTTP response properties directly into msg

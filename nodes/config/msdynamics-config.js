@@ -74,10 +74,9 @@ module.exports = function (RED) {
             let dynamicsData = globalContext.get(this.storageKey) || {};
             dynamicsData.accessToken = this.accessToken;
             dynamicsData.instanceUrl = this.instanceUrl;
+            dynamicsData.expiresAt = this.expiresAt;
             globalContext.set(this.storageKey, dynamicsData);
           }
-
-          this.log("Token refreshed successfully");
           // Set up next refresh
           this.refreshTimer = setTimeout(
             () => this.refreshToken(),
