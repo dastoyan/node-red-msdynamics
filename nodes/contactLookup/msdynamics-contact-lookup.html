@@ -9,7 +9,10 @@
             lookupMobile: { value: true },
             timeout: { value: 3000 }, // Default to 3000 ms
             selectedOption: { value: "sessionSipUri" }, // Default to sessionSipUri
-            customAttribute: { value: "" } // Default to empty string for custom attribute
+            customAttribute: { value: "" }, // Default to empty string for custom attribute
+            returnAttributesOption: { value: "all" }, // Default to 'All Attributes'
+            customReturnAttributes: { value: "firstname, lastname, emailaddress1" } // Default return attributes
+
         },
         inputs: 1,
         outputs: 3,
@@ -41,6 +44,18 @@
 
             $("#node-input-selectedOption").on("change", toggleCustomAttributeField);
             toggleCustomAttributeField();
+
+            function toggleCustomReturnAttributesField() {
+                if ($("#node-input-returnAttributesOption").val() === "custom") {
+                    $("#customReturnAttributesRow").show();
+                } else {
+                    $("#customReturnAttributesRow").hide();
+                }
+            }
+
+            $("#node-input-returnAttributesOption").on("change", toggleCustomReturnAttributesField);
+            toggleCustomReturnAttributesField();
+
         }
     });
 </script>
@@ -84,6 +99,17 @@
     <div class="form-row" id="customAttributeRow">
         <label for="node-input-customAttribute">Custom Attribute Path</label>
         <input type="text" id="node-input-customAttribute" placeholder="e.g., msg.myCustomAttribute">
+    </div>
+    <div class="form-row">
+        <label for="node-input-returnAttributesOption">Attributes to Return</label>
+        <select id="node-input-returnAttributesOption">
+            <option value="all">All Attributes</option>
+            <option value="custom">Custom List</option>
+        </select>
+    </div>
+    <div class="form-row" id="customReturnAttributesRow" style="display:none;">
+        <label for="node-input-customReturnAttributes">Custom Return Attributes</label>
+        <input type="text" id="node-input-customReturnAttributes" placeholder="e.g., firstname, lastname, emailaddress1" value="firstname, lastname, emailaddress1">
     </div>
 </script>
 

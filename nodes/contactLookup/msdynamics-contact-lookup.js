@@ -6,11 +6,16 @@ module.exports = function (RED) {
 
     // Set default timeout to 3000 ms if not specified
     this.timeout = config.timeout || 3000;
+
+    // Which contact attributes should be used as key for the lookup
     this.lookupTelephone = config.lookupTelephone;
     this.lookupMobile = config.lookupMobile;
-
+    // Or if a custom attribute should be used as a key for the lookup
     this.selectedOption = config.selectedOption;
     this.customAttribute = config.customAttribute;
+    // Attributes to return - all or a custom list
+    this.returnAttributesOption = config.returnAttributesOption;
+    this.customReturnAttributes = config.customReturnAttributes;
 
     function processPhoneNumber(phoneNumberPath) {
       if (!phoneNumberPath) {
@@ -26,10 +31,6 @@ module.exports = function (RED) {
         );
       }
       return phoneNumber;
-    }
-
-    function getValueFromPath(msg, path) {
-      return path.split(".").reduce((obj, prop) => obj && obj[prop], msg);
     }
 
     async function handleFetchResponse(response) {
@@ -60,6 +61,8 @@ module.exports = function (RED) {
     }
 
     async function performLookup(phoneNumber) {
+      const apiVersion = configNode.apiVersion || "v9.2";
+
       let queryParts = [];
       if (node.lookupTelephone) {
         queryParts.push(`telephone1 eq '${phoneNumber}'`);
@@ -70,9 +73,18 @@ module.exports = function (RED) {
       const query = queryParts.join(" or ");
       const encodedQuery = encodeURIComponent(query);
 
-      const apiVersion = configNode.apiVersion || "v9.2";
-      const url = `${configNode.instanceUrl}api/data/${apiVersion}/contacts?$filter=${encodedQuery}`;
+      let selectClause = "";
+      console.log("this.returnAttributesOption ", node.returnAttributesOption);
+      if (node.returnAttributesOption === "custom") {
+        let attributesList = node.customReturnAttributes
+          .split(",")
+          .map((attr) => attr.trim())
+          .join(",");
+        selectClause = `&$select=${attributesList}`;
+      }
 
+      const url = `${configNode.instanceUrl}api/data/${apiVersion}/contacts?$filter=${encodedQuery}${selectClause}`;
+      console.log(url);
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), node.timeout);
 
