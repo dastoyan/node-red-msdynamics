@@ -1,0 +1,46 @@
+<script type="text/javascript">
+    RED.nodes.registerType('msdynamics-contact-lookup', {
+        category: 'MSDynamics',
+        color: '#A6E1FA',
+        defaults: {
+            name: { value: "" },
+            configNodeId: { value: "", type: "msdynamics-config", required: true },
+            lookupTelephone: { value: true },
+            lookupMobile: { value: true },
+            timeout: { value: 3000 }, // Default to 3000 ms
+        },
+        inputs: 1,
+        outputs: 3,
+        outputLabels: ["One Contact Found", "No or Multiple Contacts Found", "Error/Timeout"],
+        icon: "font-awesome/fa-phone",
+        label: function () {
+            return this.name || "Contact Lookup";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="msdynamics-contact-lookup">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-configNodeId"><i class="icon-gears"></i> Config</label>
+        <select id="node-input-configNodeId" style="width:70%;"></select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-timeout"><i class="fa fa-clock-o"></i> Lookup Timeout (ms)</label>
+        <input type="number" id="node-input-timeout" value="3000">
+    </div>
+    <div class="form-row">
+    <label for="node-input-lookupTelephone"><i class="fa fa-phone"></i> Lookup Telephone</label>
+    <input type="checkbox" id="node-input-lookupTelephone" style="display: inline-block; width: auto; vertical-align: middle;">
+    <span style="display: inline-block; margin-left: 8px; vertical-align: middle;">(Attribute: telephone1)</span>
+</div>
+<div class="form-row">
+    <label for="node-input-lookupMobile"><i class="fa fa-mobile"></i> Lookup Mobile</label>
+    <input type="checkbox" id="node-input-lookupMobile" style="display: inline-block; width: auto; vertical-align: middle;">
+    <span style="display: inline-block; margin-left: 8px; vertical-align: middle;">(Attribute: mobilephone)</span>
+</div>
+
+</script>

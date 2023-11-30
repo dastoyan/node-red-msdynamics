@@ -1,6 +1,6 @@
 {
   "name": "@dastoyan/node-red-msdynamics",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Node-RED node for Microsoft Dynamics authentication.",
   "keywords": [
     "node-red",
@@ -12,7 +12,9 @@
   "node-red": {
     "version": ">=3.0.0",
     "nodes": {
-      "msdynamics-auth": "./nodes/auth/msdynamics-auth.js"
+      "msdynamics-auth": "./nodes/auth/msdynamics-auth.js",
+      "msdynamics-config": "./nodes/config/msdynamics-config.js",
+      "msdynamics-contact-lookup": "./nodes/contactLookup/msdynamics-contact-lookup.js"
     }
   },
   "scripts": {

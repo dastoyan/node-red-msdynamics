@@ -1,0 +1,145 @@
+<script type="text/javascript">
+    RED.nodes.registerType('msdynamics-config', {
+        category: 'config',
+        defaults: {
+            name: { value: "" },
+            clientId: { value: "", required: true },
+            tenantId: { value: "", required: true },
+            instanceUrl: { value: "", required: true },
+            refreshInterval: { value: 30, required: true }, // Default refresh interval in minutes
+            retryInterval: { value: 15, required: true }, // Default retry interval in minutes
+            tokenEndpoint: { value: "", required: false },
+            grantType: { value: "", required: false },
+            scopeSuffix: { value: "", required: false },
+            host: { value: "", required: false },
+            writeToGlobal: { value: false },
+            storageKey: { value: "msDynamicsToken", required: false },
+            apiVersion: { value: "v9.2" }
+        },
+        credentials: {
+            clientSecret: { type: "password", required: true }
+        },
+        label: function () {
+            return this.name || "Auth Config";
+        },
+        oneditprepare: function () {
+            // Additional logic to prepare the edit dialog
+            const updateTokenEndpoint = () => {
+                const tenantId = $("#node-config-input-tenantId").val();
+                const host = $("#node-config-input-host").val() || "login.microsoftonline.com";
+                const tokenEndpoint = `https://${host}/${tenantId}/oauth2/v2.0/token`;
+                $("#node-config-input-tokenEndpoint").val(tokenEndpoint);
+            };
+
+            $("#node-config-input-tenantId, #node-config-input-host").on(
+                "change",
+                updateTokenEndpoint
+            );
+            updateTokenEndpoint(); // Call on edit prepare to initialize value
+
+            // Logic to handle writeToGlobal checkbox state and disable/enable storage key input
+            const writeToGlobalCheckbox = $("#node-config-input-writeToGlobal");
+            const storageKeyInput = $("#node-config-input-storageKey");
+
+            function updateStorageKeyState() {
+                if (writeToGlobalCheckbox.is(":checked")) {
+                    storageKeyInput.prop('disabled', false);
+                } else {
+                    storageKeyInput.prop('disabled', true);
+                }
+            }
+
+            writeToGlobalCheckbox.on("change", function () {
+                updateStorageKeyState();
+            });
+
+            // Initialize the state on edit prepare
+            updateStorageKeyState();
+        },
+        oneditsave: function () {
+            // Logic to run when the edit dialog is saved
+
+        }
+    });
+</script>
+
+<script type="text/x-red" data-help-name="msdynamics-config">
+  <p>This configuration manages authentication with Microsoft Dynamics by handling access token generation and refresh. Nodes that use it can reuse the token and connection configuration to Dynamics directly. If using the standard nodes that come with this bundle, you do not need to take care of tokens, etc.</p>
+
+  <p>For use cases where you want to build aditional lookups that are not part of the functionality that comes with the nodes in this bundle, the refreshed access token can optionally be made availalbe in the Node-RED global context under the key <code>msDynamicsToken</code>, which includes the <code>accessToken</code> string, the <code>expiresAt</code> timestamp and the <code>instanceUrl</code>.</p>
+  <p>To directly access the <code>accessToken</code> in your flows, use:</p>
+  <pre><code>const accessToken = global.get("msDynamicsToken.accessToken");</code></pre>
+  <p>If <code>accessToken</code> is available, it can be used for authenticated API calls to Microsoft Dynamics.</p>
+  <p>The node automatically refreshes the token at set intervals ('Refresh Interval' and 'Retry Interval').</p>
+  <p>The token is also refreshed when the flow is deployed or Node-RED restarts.</p>
+  <p>Errors are always logged, but for detailed error messages, a debug node is recommended.</p>
+  <p><strong>Note:</strong> Storing sensitive information like access tokens in the global context allows any node in the flow to access it. Ensure to follow best security practices in handling such sensitive information.</p>
+  <p><strong>Note:</strong> The fields for Token Endpoint, Grant Type, Scope Suffix, and Host have default values that are suitable for most use cases. Only modify these if your specific Microsoft Dynamics setup requires different values.</p>
+</script>
+
+<script type="text/x-red" data-template-name="msdynamics-config">
+          <div class="form-row">
+              <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+              <input type="text" id="node-config-input-name" placeholder="Name">
+          </div>
+          <div class="form-row">
+              <label for="node-config-input-clientId"><i class="fa fa-user"></i> Client ID</label>
+              <input type="text" id="node-config-input-clientId" placeholder="Client ID">
+          </div>
+          <div class="form-row">
+              <label for="node-config-input-tenantId"><i class="fa fa-building"></i> Tenant ID</label>
+              <input type="text" id="node-config-input-tenantId" placeholder="Tenant ID">
+          </div>
+          <div class="form-row">
+              <label for="node-config-input-instanceUrl"><i class="fa fa-link"></i> Instance URL</label>
+              <input type="text" id="node-config-input-instanceUrl" placeholder="https://yourinstance.crm4.dynamics.com/">
+          </div>
+          <div class="form-row">
+              <label for="node-config-input-clientSecret"><i class="fa fa-key"></i> Client Secret</label>
+              <input type="password" id="node-config-input-clientSecret">
+          </div>
+        <div class="form-row">
+            <label for="node-config-input-refreshInterval"><i class="fa fa-clock-o"></i> Refresh Interval (minutes)</label>
+            <input type="number" id="node-config-input-refreshInterval" placeholder="30">
+        </div>
+        <div class="form-row">
+            <label for="node-config-input-retryInterval"><i class="fa fa-repeat"></i> Retry Interval (minutes)</label>
+            <input type="number" id="node-config-input-retryInterval" placeholder="15">
+        </div>
+        <div class="form-row">
+            <label for="node-config-input-writeToGlobal"><i class="fa fa-exchange"></i> Write to Global Context</label>
+            <input type="checkbox" id="node-config-input-writeToGlobal" style="display: inline-block; width: auto; vertical-align: top;">
+        </div>
+        <div class="form-row">
+            <label for="node-config-input-storageKey"><i class="fa fa-database"></i> Global Context Storage Key</label>
+            <input type="text" id="node-config-input-storageKey" placeholder="msDynamicsToken">
+        </div>
+        <div class="form-row">
+          <p style="color: #555; margin-top: 4px; margin-bottom: 4px;">
+              <strong>Note:</strong> The following are advanced settings and should not be changed.
+          </p>
+          <p>
+            Leave them empty to use the defaults.
+        </p>
+      </div>
+        <div class="form-row">
+          <label for="node-config-input-tokenEndpoint">Token Endpoint</label>
+          <input type="text" id="node-config-input-tokenEndpoint" readonly>
+      </div>
+      <div class="form-row">
+          <label for="node-config-input-grantType">Grant Type</label>
+          <input type="text" id="node-config-input-grantType" placeholder="client_credentials">
+      </div>
+      <div class="form-row">
+          <label for="node-config-input-scopeSuffix">Scope Suffix</label>
+          <input type="text" id="node-config-input-scopeSuffix" placeholder=".default">
+      </div>
+      <div class="form-row">
+          <label for="node-config-input-host">Host</label>
+          <input type="text" id="node-config-input-host" placeholder="login.microsoftonline.com">
+      </div>
+      <div class="form-row">
+        <label for="node-config-input-apiVersion"><i class="fa fa-code-branch"></i> API Version</label>
+        <input type="text" id="node-config-input-apiVersion" placeholder="v9.2">
+      </div>
+  </script>
