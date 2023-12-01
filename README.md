@@ -9,6 +9,7 @@ Searches for contacts in Microsoft Dynamics using a provided phone number
 ## Inputs and Outputs
 
 **Input**: Expects a message with one of the selected paths containing the phone number to look up. The node cleans up the phone number from the input message by removing domain suffixes, empty space and any non-numeric characters except for the leading plus sign.
+
 **Outputs**:
 
 - **One Contact Found**: Outputs the contact data if exactly one match is found.
