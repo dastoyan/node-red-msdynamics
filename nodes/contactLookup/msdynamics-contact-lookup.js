@@ -1,3 +1,5 @@
+const fetch = require("node-fetch");
+
 module.exports = function (RED) {
   function MSDynamicsContactLookupNode(config) {
     RED.nodes.createNode(this, config);
