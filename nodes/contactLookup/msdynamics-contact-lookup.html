@@ -7,6 +7,7 @@
             configNodeId: { value: "", type: "msdynamics-config", required: true },
             lookupTelephone: { value: true },
             lookupMobile: { value: true },
+            customLookupAttributes: { value: "" },
             timeout: { value: 3000 }, // Default to 3000 ms
             selectedOption: { value: "sessionSipUri" }, // Default to sessionSipUri
             customAttribute: { value: "" }, // Default to empty string for custom attribute
@@ -84,6 +85,10 @@
             <label for="node-input-lookupMobile"><i class="fa fa-mobile"></i> Mobile</label>
             <input type="checkbox" id="node-input-lookupMobile" style="display: inline-block; width: auto; vertical-align: middle;">
             <span style="display: inline-block; margin-left: 8px; vertical-align: middle;">(Attribute: mobilephone)</span>
+        </div>
+        <div class="form-row">
+            <label for="node-input-customLookupAttributes">Custom Lookup Attributes</label>
+            <input type="text" id="node-input-customLookupAttributes" placeholder="e.g., fax, telephone2">
         </div>
     </fieldset>
     <!-- Include selection for predefined attributes and a text input for custom attribute. These are the attributes where the phone number is stored -->

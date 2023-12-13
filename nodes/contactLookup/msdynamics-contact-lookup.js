@@ -12,6 +12,7 @@ module.exports = function (RED) {
     // Which contact attributes should be used as key for the lookup
     this.lookupTelephone = config.lookupTelephone;
     this.lookupMobile = config.lookupMobile;
+    this.customLookupAttributes = config.customLookupAttributes;
     // Or if a custom attribute should be used as a key for the lookup
     this.selectedOption = config.selectedOption;
     this.customAttribute = config.customAttribute;
@@ -66,11 +67,26 @@ module.exports = function (RED) {
       const apiVersion = configNode.apiVersion || "v9.2";
 
       let queryParts = [];
+      // Add standard attributes if selected
       if (node.lookupTelephone) {
         queryParts.push(`telephone1 eq '${phoneNumber}'`);
       }
       if (node.lookupMobile) {
         queryParts.push(`mobilephone eq '${phoneNumber}'`);
+      }
+      // Add custom lookup attributes to the query
+      if (node.customLookupAttributes) {
+        const customAttributes = node.customLookupAttributes
+          .split(",")
+          .map((attr) => attr.trim());
+        customAttributes.forEach((attr) => {
+          if (attr) {
+            queryParts.push(`${attr} eq '${phoneNumber}'`);
+          }
+        });
+      }
+      if (queryParts.length === 0) {
+        throw new Error("No lookup attributes defined.");
       }
       const query = queryParts.join(" or ");
       const encodedQuery = encodeURIComponent(query);
@@ -115,7 +131,7 @@ module.exports = function (RED) {
 
     node.on("input", async function (msg) {
       // Ensure at least one lookup attribute is checked
-      if (!config.lookupTelephone && !config.lookupMobile) {
+      /*       if (!config.lookupTelephone && !config.lookupMobile) {
         node.error(
           "At least one of 'Lookup Telephone' or 'Lookup Mobile' must be checked."
         );
@@ -129,7 +145,7 @@ module.exports = function (RED) {
         ]);
         return;
       }
-
+ */
       try {
         let pathMap = {
           sessionSipUri: "msg.session.sipUri",
