@@ -23,20 +23,25 @@ Searches for contacts in Microsoft Dynamics using a provided phone number
 - **Attribute Lookup**:
   - **Telephone**: Enables searching the <code>telephone1</code> field.
   - **Mobile**: Enables searching the <code>mobilephone</code> field.
+  - **Custom Lookup Attributes**: Enter a comma-separated list of attributes you want to be searched in addition to the above. For example, <code>telephone2, fax</code>.
 - **Phone Number Source**:
   - **<code>msg.session.sipUri</code>**: Anywhere365 Dialogue Cloud V3 (default).
   - **<code>msg.dialogue.initiator.platformParticipantId</code>**: Anywhere365 Dialogue Cloud Infinitiy.
   - **<code>msg.payload.q</code>**: Anywhere365 V3 WebAgent CRM Read integration.
   - **Custom Attribute**: Any other custom path you might need to use.
-- **Custom Attribute Path**: When **Custom Attribute** is selected this additional input field is presented. Enter the full path to where the phone number is stored. For example, <code>msg.myCustomAttribute</code>
+- **Custom Attribute Path**: When **Custom Attribute** is selected this additional input field is presented. Enter the full path to where the phone number is stored. For example, <code>msg.myCustomAttribute</code>.
 - **Attributes to Return**:
   - **All Attributes**: All attributes of the entity in Dynamics will be returned. Note that this might result in slow responses.
   - **Custom List**: Speciffy which attributes to return.
-- **Custom Return Attributes**: When **Custom List** is selected this additional input field is presented. Enter a comma-separated list of attributes you want to be returned. For example, <code>firstname, lastname, emailaddress1</code>
+- **Custom Return Attributes**: When **Custom List** is selected this additional input field is presented. Enter a comma-separated list of attributes you want to be returned. For example, <code>firstname, lastname, emailaddress1</code>.
 
 <img src="assets/images/contactlookupnode.png" width="500" alt="Contact Lookup Node">
 
-_Example of Contact Lookup node and the returned data._
+_Example of Contact Lookup node._
+
+<img src="assets/images/contactlookupnode-output.png" width="500" alt="Contact Lookup Node Output">
+
+_Example of Contact Lookup node returned data._
 
 ## Usage
 

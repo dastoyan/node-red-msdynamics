@@ -129,13 +129,14 @@
     <ul>
         <li><strong>Telephone</strong>: Enables searching the <code>telephone1</code> field.</li>
         <li><strong>Mobile</strong>: Enables searching the <code>mobilephone</code> field.</li>
+        <li><strong>Custom Lookup Attributes</strong>: Enter a comma-separated list of attributes you want to be searched in addition to the above. For example, <code>telephone2, fax</code>.</li>
     </ul>
     <p><strong>Phone Number Source</strong>:</p>
     <ul>
         <li><code>msg.session.sipUri</code>: Anywhere365 Dialogue Cloud V3 (default).</li>
         <li><code>msg.dialogue.initiator.platformParticipantId</code>: Anywhere365 Dialogue Cloud Infinitiy.</li>
         <li><code>msg.payload.q</code>: Anywhere365 V3 WebAgent CRM Read integration.</li>
-        <li>Custom Attribute: Any other custom path you might need to use.</li>
+        <li><strong>Custom Attribute</strong>: Any other custom path you might need to use.</li>
     </ul>
     <p><strong>Custom Attribute Path</strong>: When <strong>Custom Attribute</strong> is selected this additional input field is presented. Enter the full path to where the phone number is stored. For example, <code>msg.myCustomAttribute</code></p>
     <p><strong>Attributes to Return</strong>:</p>
