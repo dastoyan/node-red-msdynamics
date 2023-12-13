@@ -64,7 +64,7 @@ module.exports = function (RED) {
     }
 
     async function performLookup(phoneNumber) {
-      const apiVersion = configNode.apiVersion || "v9.2";
+      const apiVersion = configNode.apiVersion;
 
       let queryParts = [];
       // Add standard attributes if selected

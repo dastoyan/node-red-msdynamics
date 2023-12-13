@@ -16,6 +16,7 @@ module.exports = function (RED) {
       this.scopeSuffix = config.scopeSuffix || ".default";
       this.host = config.host || "login.microsoftonline.com";
       this.storageKey = config.storageKey || "msDynamicsToken";
+      this.apiVersion = config.apiVersion || "v9.2";
       this.accessToken = null;
       this.expiresAt = null;
 

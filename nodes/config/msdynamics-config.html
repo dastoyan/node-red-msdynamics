@@ -14,7 +14,7 @@
             host: { value: "", required: false },
             writeToGlobal: { value: false },
             storageKey: { value: "msDynamicsToken", required: false },
-            apiVersion: { value: "v9.2" }
+            apiVersion: { value: "", required: false }
         },
         credentials: {
             clientSecret: { type: "password", required: true }
@@ -74,7 +74,7 @@
   <p>The token is also refreshed when the flow is deployed or Node-RED restarts.</p>
   <p>Errors are always logged, but for detailed error messages, a debug node is recommended.</p>
   <p><strong>Note:</strong> Storing sensitive information like access tokens in the global context allows any node in the flow to access it. Ensure to follow best security practices in handling such sensitive information.</p>
-  <p><strong>Note:</strong> The fields for Token Endpoint, Grant Type, Scope Suffix, and Host have default values that are suitable for most use cases. Only modify these if your specific Microsoft Dynamics setup requires different values.</p>
+  <p><strong>Note:</strong> The fields for Token Endpoint, Grant Type, Scope Suffix, Host and API Version have default values that are suitable for most use cases. Only modify these if your specific Microsoft Dynamics setup requires different values.</p>
 </script>
 
 <script type="text/x-red" data-template-name="msdynamics-config">
