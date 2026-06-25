@@ -25,9 +25,9 @@ Searches for contacts in Microsoft Dynamics using a provided phone number
   - **Mobile**: Enables searching the <code>mobilephone</code> field.
   - **Custom Lookup Attributes**: Enter a comma-separated list of attributes you want to be searched in addition to the above. For example, <code>telephone2, fax</code>.
 - **Phone Number Source**:
-  - **<code>msg.session.sipUri</code>**: Anywhere365 Dialogue Cloud V3 (default).
-  - **<code>msg.dialogue.initiator.platformParticipantId</code>**: Anywhere365 Dialogue Cloud Infinitiy.
-  - **<code>msg.payload.q</code>**: Anywhere365 V3 WebAgent CRM Read integration.
+  - **<code>msg.session.sipUri</code>**: AnywhereNow Dialogue Cloud V3 (default).
+  - **<code>msg.dialogue.initiator.platformParticipantId</code>**: AnywhereNow Dialogue Cloud Infinitiy.
+  - **<code>msg.payload.q</code>**: AnywhereNow V3 WebAgent CRM Read integration.
   - **Custom Attribute**: Any other custom path you might need to use.
 - **Custom Attribute Path**: When **Custom Attribute** is selected this additional input field is presented. Enter the full path to where the phone number is stored. For example, <code>msg.myCustomAttribute</code>.
 - **Attributes to Return**:
@@ -104,15 +104,15 @@ This project is licensed under the MIT License.
 
 # Acknowledgments
 
-This Node-RED node was developed as part of my work at Anywhere365 and an initiative to integrate Dynamics 365 more efficiently within the Dialogue Studio low-code environment which uses a custom version of Node-RED.
+This Node-RED node was developed as part of my work at AnywhereNow and an initiative to integrate Dynamics 365 more efficiently within the Dialogue Studio low-code environment which uses a custom version of Node-RED.
 
 # Disclaimer
 
-This Node-RED node is an independent project and is not officially supported or affiliated with Anywhere365. It has been developed outside of Anywhere365's official channels.
+This Node-RED node is an independent project and is not officially supported or affiliated with AnywhereNow. It has been developed outside of AnywhereNow's official channels.
 
 **Please Note**:
 
-- **No Affiliation**: This project is not affiliated with Anywhere365 in any official capacity. Views, opinions, and code in this node are solely those of the author(s) and do not represent those of Anywhere365.
-- **Use at Your Own Risk**: Users should use this node at their own risk. While efforts have been made to ensure reliability and safety, Anywhere365 or the author(s) cannot be held responsible for any damages, data loss, or other issues arising from the use of this node.
+- **No Affiliation**: This project is not affiliated with AnywhereNow in any official capacity. Views, opinions, and code in this node are solely those of the author(s) and do not represent those of AnywhereNow.
+- **Use at Your Own Risk**: Users should use this node at their own risk. While efforts have been made to ensure reliability and safety, AnywhereNow or the author(s) cannot be held responsible for any damages, data loss, or other issues arising from the use of this node.
 - **No Warranty**: This node is provided "as is" without any warranties of any kind, either express or implied. Users are responsible for testing and validating its functionality in their specific environment.
 - **I am not a developer**: The author of this nodes is not a developer. This a project developed in my free time and heavily relying on chatGPT for code help. With that in mind, please set your expectations right :)

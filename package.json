@@ -1,7 +1,7 @@
 {
   "name": "@dastoyan/node-red-msdynamics",
   "version": "1.0.0",
-  "description": "Node-RED node for Microsoft Dynamics with Anywhere365 Dialogue Studio.",
+  "description": "Node-RED node for Microsoft Dynamics with AnywhereNow Dialogue Studio.",
   "keywords": [
     "node-red",
     "microsoft",
