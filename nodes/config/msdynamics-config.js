@@ -1,5 +1,6 @@
 const querystring = require("querystring");
 const fetch = require("node-fetch");
+const { createTokenStoreAdapter } = require("./token-store-adapters");
 
 module.exports = function (RED) {
   class MSDynamicsConfigNode {
@@ -23,6 +24,11 @@ module.exports = function (RED) {
       this.refreshTimer = null;
 
       this.writeToGlobal = config.writeToGlobal;
+      this.tokenStore = createTokenStoreAdapter({
+        writeToGlobal: this.writeToGlobal,
+        globalContext: this.context().global,
+        storageKey: this.storageKey,
+      });
 
       // Trigger token refresh when the node is created
       this.refreshToken();
@@ -68,16 +74,12 @@ module.exports = function (RED) {
           this.accessToken = data.access_token;
           this.expiresAt = Date.now() + data.expires_in * 1000;
 
-          if (this.writeToGlobal) {
-            // Store token and instance URL in global context
-            // This is not needed for the other nodes, but is intended as a helper for the users that develop flows to have a token that they can use when doing custom function calls.
-            let globalContext = this.context().global;
-            let dynamicsData = globalContext.get(this.storageKey) || {};
-            dynamicsData.accessToken = this.accessToken;
-            dynamicsData.instanceUrl = this.instanceUrl;
-            dynamicsData.expiresAt = this.expiresAt;
-            globalContext.set(this.storageKey, dynamicsData);
-          }
+          // Store token and instance URL using a selected adapter.
+          this.tokenStore.write({
+            accessToken: this.accessToken,
+            instanceUrl: this.instanceUrl,
+            expiresAt: this.expiresAt,
+          });
           // Set up next refresh
           this.refreshTimer = setTimeout(
             () => this.refreshToken(),

@@ -1,6 +1,6 @@
 {
   "name": "@dastoyan/node-red-msdynamics",
-  "version": "0.0.5",
+  "version": "1.0.0",
   "description": "Node-RED node for Microsoft Dynamics with Anywhere365 Dialogue Studio.",
   "keywords": [
     "node-red",
@@ -17,7 +17,7 @@
     }
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node tests/contact-lookup-msg-path-utils.test.js && node tests/config-token-store-adapters.test.js && node tests/contact-lookup-phone-number-utils.test.js && node tests/contact-lookup-odata-query-builder.test.js && node tests/contact-lookup-result-classifier.test.js"
   },
   "author": "Stoyan Stoitsev stoyan.stoitsev@gmail.com @dastoyan",
   "license": "MIT",
